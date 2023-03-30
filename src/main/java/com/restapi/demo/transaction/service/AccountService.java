@@ -122,7 +122,7 @@ public class AccountService {
      * @throws InvalidAccountException    If the specified account ID is null or empty.
      * @throws InsufficientFundsException If the account balance is less than the specified amount.
      */
-    public void withdraw(String accountId, BigDecimal amount) throws AccountNotFoundException, InvalidAccountException, InsufficientFundsException {
+    public synchronized void withdraw(String accountId, BigDecimal amount) throws AccountNotFoundException, InvalidAccountException, InsufficientFundsException {
         if (accountId == null || accountId.isEmpty()) {
             throw new InvalidAccountException("Account id cannot be null or empty");
         }
@@ -148,7 +148,7 @@ public class AccountService {
      * @throws AccountNotFoundException If no account exists with the specified ID.
      * @throws InvalidAccountException  If the specified account ID is null or empty.
      */
-    public void deposit(String accountId, BigDecimal amount) throws AccountNotFoundException, InvalidAccountException {
+    public synchronized void deposit(String accountId, BigDecimal amount) throws AccountNotFoundException, InvalidAccountException {
         if (accountId == null || accountId.isEmpty()) {
             throw new InvalidAccountException("Account id cannot be null or empty");
         }
