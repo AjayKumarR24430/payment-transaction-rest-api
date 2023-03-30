@@ -7,10 +7,13 @@ The Transaction API is designed to facilitate the transfer of funds between user
 ## Technologies Used
 The Transaction API is built using Java and the Spring Framework. The project includes the following dependencies:
 
+* Java 8 or higher
+* Maven 
 * Spring Boot Starter Web
 * Spring Boot Starter Data JPA
 * MySQL database
 * Spring Boot Starter Test
+* An IDE such as IntelliJ IDEA or Eclipse
 
 ## Setup
 To set up the project, follow these steps:
@@ -24,7 +27,7 @@ To set up the project, follow these steps:
 ## Endpoints
 The Transaction API includes the following endpoints:
 
-### Accounts
+### Accounts Overview
 
 #### GET /v1/accounts/{accountId} 
 Retrieves information about the specified account.
@@ -38,10 +41,120 @@ Deposits the specified amount into the specified account.
 #### PUT /v1/accounts/{accountId}/withdraw?amount={amount}
 Withdraws the specified amount from the specified account.
 
-### Payments
+### Payments Overview
 
 #### POST /v1/payments?fromAccountId={fromAccountId}&toAccountId={toAccountId}&amount={amount}
 Initiates a payment from the specified account to the specified recipient account for the specified amount.
+
+## Account API Usage
+
+#### Get all accounts
+Endpoint: GET /v1/accounts
+
+Response:
+
+```
+[  {    "id": "1",    "name": "John Doe",    "balance": 1000.00  },  {    "id": "2",    "name": "Jane Doe",    "balance": 500.00  }]
+```
+
+#### Get account by ID
+Endpoint: GET /v1/accounts/{accountId}
+
+Parameters:
+
+accountId - The ID of the account to retrieve
+Response:
+ ```
+{
+"id": "1",
+"name": "John Doe",
+"balance": 1000.00
+}
+```
+
+#### Create account
+Endpoint: POST /v1/accounts
+
+Request body:
+
+```
+{
+"name": "John Doe",
+"balance": 1000.00
+}
+```
+
+Response:
+```
+{
+"id": "1",
+"name": "John Doe",
+"balance": 1000.00
+}
+```
+
+#### Update account
+Endpoint: PUT /v1/accounts/{accountId}
+
+Parameters:
+
+accountId - The ID of the account to update
+Request body:
+
+```
+{
+"name": "John Doe",
+"balance": 1500.00
+}
+```
+
+Response:
+```
+{
+"id": "1",
+"name": "John Doe",
+"balance": 1500.00
+}
+```
+
+#### Delete account
+Endpoint: DELETE /v1/accounts/{accountId}
+
+Parameters:
+
+accountId - The ID of the account to delete
+Response:
+```
+HTTP 204 No Content
+```
+
+#### Deposit
+Endpoint: POST /v1/accounts/{accountId}/deposit
+
+Parameters:
+
+accountId - The ID of the account to deposit funds into
+Request parameters:
+
+amount - The amount of funds to deposit
+Response:
+```
+HTTP 204 No Content
+```
+
+#### Withdraw
+Endpoint: POST /v1/accounts/{accountId}/withdraw
+
+Parameters:
+
+accountId - The ID of the account to withdraw funds from
+Request parameters:
+
+amount - The amount of funds to withdraw
+Response:
+```
+HTTP 204 No Content
+```
 
 ## Testing
 The Transaction API includes a suite of automated tests that can be run using the test command in Maven or Gradle. These tests cover various scenarios for account creation, depositing, withdrawing, and making payments.
