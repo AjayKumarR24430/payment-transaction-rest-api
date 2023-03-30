@@ -54,7 +54,7 @@ Endpoint: GET /v1/accounts
 Response:
 
 ```
-[  {    "id": "1",    "name": "John Doe",    "balance": 1000.00  },  {    "id": "2",    "name": "Jane Doe",    "balance": 500.00  }]
+[  {    "id": "1",    "name": "ABC",    "balance": 1000.00  },  {    "id": "2",    "name": "CDE",    "balance": 500.00  }]
 ```
 
 #### Get account by ID
@@ -67,7 +67,7 @@ Response:
  ```
 {
 "id": "1",
-"name": "John Doe",
+"name": "ABC",
 "balance": 1000.00
 }
 ```
@@ -79,7 +79,7 @@ Request body:
 
 ```
 {
-"name": "John Doe",
+"name": "ABC",
 "balance": 1000.00
 }
 ```
@@ -88,7 +88,7 @@ Response:
 ```
 {
 "id": "1",
-"name": "John Doe",
+"name": "ABC",
 "balance": 1000.00
 }
 ```
@@ -103,7 +103,7 @@ Request body:
 
 ```
 {
-"name": "John Doe",
+"name": "ABC",
 "balance": 1500.00
 }
 ```
@@ -112,7 +112,7 @@ Response:
 ```
 {
 "id": "1",
-"name": "John Doe",
+"name": "ABC",
 "balance": 1500.00
 }
 ```
