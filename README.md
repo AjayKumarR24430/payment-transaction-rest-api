@@ -138,10 +138,6 @@ accountId - The ID of the account to deposit funds into
 Request parameters:
 
 amount - The amount of funds to deposit
-Response:
-```
-HTTP 204 No Content
-```
 
 #### Withdraw
 Endpoint: POST /v1/accounts/{accountId}/withdraw
@@ -153,11 +149,6 @@ accountId - The ID of the account to withdraw funds from
 Request parameters:
 
 amount - The amount of funds to withdraw
-
-Response:
-```
-HTTP 204 No Content
-```
 
 ## Testing
 The Transaction API includes a suite of automated tests that can be run using the test command in Maven or Gradle. These tests cover various scenarios for account creation, depositing, withdrawing, and making payments.
