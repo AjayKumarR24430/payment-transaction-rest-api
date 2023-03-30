@@ -134,6 +134,7 @@ Endpoint: POST /v1/accounts/{accountId}/deposit
 Parameters:
 
 accountId - The ID of the account to deposit funds into
+
 Request parameters:
 
 amount - The amount of funds to deposit
@@ -148,9 +149,11 @@ Endpoint: POST /v1/accounts/{accountId}/withdraw
 Parameters:
 
 accountId - The ID of the account to withdraw funds from
+
 Request parameters:
 
 amount - The amount of funds to withdraw
+
 Response:
 ```
 HTTP 204 No Content
