@@ -92,18 +92,17 @@ public class AccountController {
     }
 
     /**
-     * Transfers funds from one account to another.
      *
+     * Deposits funds from one account to another.
      * @param fromAccountId the ID of the account to transfer funds from
-     * @param toAccountId   the ID of the account to transfer funds to
-     * @param amount        the amount of funds to transfer
+     * @param depositRequest a DepositRequest object containing the ID of the account to transfer funds to and the amount to transfer
      * @return a ResponseEntity with an HTTP status code indicating success or failure
      */
     @PostMapping("/{fromAccountId}/deposit")
-    public ResponseEntity<String> deposit(@PathVariable String fromAccountId, @RequestParam("toAccountId") String toAccountId, @RequestParam("amount") BigDecimal amount) {
+    public ResponseEntity<String> deposit(@PathVariable String fromAccountId, @RequestBody DepositRequest depositRequest) {
         try {
-            accountService.deposit(toAccountId, amount, fromAccountId);
-            String message = String.format("Successfully transferred %s from account %s to account %s.", amount, fromAccountId, toAccountId);
+            accountService.deposit(depositRequest.getToAccountId(), depositRequest.getAmount(), fromAccountId);
+            String message = String.format("Successfully transferred %s from account %s to account %s.", depositRequest.getAmount(), fromAccountId, depositRequest.getToAccountId());
             return ResponseEntity.ok(message);
         } catch (InsufficientFundsException e) {
             return ResponseEntity.badRequest().body("Insufficient funds.");
@@ -114,28 +113,66 @@ public class AccountController {
         }
     }
 
-
     /**
      * Withdraws funds from the account
      *
-     * @param accountId The ID of the account from which to withdraw funds
-     * @param amount The amount to withdraw from the account
+     * @param withdrawRequest A WithdrawRequest object containing the ID of the account from which to withdraw funds and the amount to withdraw
      * @return A ResponseEntity object containing the HTTP status code and any relevant data
      * @throws AccountNotFoundException if the specified account is not found
      * @throws InsufficientFundsException if the account balance is not sufficient to cover the withdrawal amount
      * @throws InvalidAccountException if the specified account ID is invalid
      */
-//    @ExceptionHandler({AccountNotFoundException.class, InvalidAccountException.class, InsufficientFundsException.class})
     @PostMapping("/{accountId}/withdraw")
-    public ResponseEntity<String> withdraw(@PathVariable String accountId, @RequestParam("amount") BigDecimal amount)
+    public ResponseEntity<String> withdraw(@PathVariable String accountId, @RequestBody WithdrawRequest withdrawRequest)
             throws AccountNotFoundException, InsufficientFundsException, InvalidAccountException {
         try {
-            accountService.withdraw(accountId, amount);
+            accountService.withdraw(accountId, withdrawRequest.getAmount());
             return ResponseEntity.noContent().build();
         } catch (AccountNotFoundException | InsufficientFundsException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         } catch (InvalidAccountException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
+    public static class DepositRequest {
+        private String toAccountId;
+        private BigDecimal amount;
+
+        public DepositRequest() {
+        }
+
+        public DepositRequest(String toAccountId, BigDecimal amount) {
+            this.toAccountId = toAccountId;
+            this.amount = amount;
+        }
+
+        public String getToAccountId() {
+            return toAccountId;
+        }
+
+        public void setToAccountId(String toAccountId) {
+            this.toAccountId = toAccountId;
+        }
+
+        public BigDecimal getAmount() {
+            return amount;
+        }
+
+        public void setAmount(BigDecimal amount) {
+            this.amount = amount;
+        }
+    }
+
+    public static class WithdrawRequest {
+        private BigDecimal amount;
+
+        public BigDecimal getAmount() {
+            return amount;
+        }
+
+        public void setAmount(BigDecimal amount) {
+            this.amount = amount;
         }
     }
 
