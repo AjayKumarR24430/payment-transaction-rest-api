@@ -20,9 +20,6 @@ public class Account {
     @Column(name = "balance", nullable = false)
     private BigDecimal balance;
 
-    @Column(name = "currency", nullable = false)
-    private String currency;
-
     /**
      * Returns the owner of the account.
      * @return The owner of the account.
@@ -53,22 +50,6 @@ public class Account {
      */
     public void setBalance(BigDecimal balance) {
         this.balance = balance;
-    }
-
-    /**
-     * Returns the currency of the account.
-     * @return The currency of the account.
-     */
-    public String getCurrency() {
-        return currency;
-    }
-
-    /**
-     * Sets the currency of the account.
-     * @param currency The currency of the account.
-     */
-    public void setCurrency(String currency) {
-        this.currency = currency;
     }
 
     /**

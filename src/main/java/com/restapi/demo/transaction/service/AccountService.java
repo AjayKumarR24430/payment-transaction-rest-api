@@ -4,7 +4,9 @@ import com.restapi.demo.transaction.exception.AccountNotFoundException;
 import com.restapi.demo.transaction.exception.InsufficientFundsException;
 import com.restapi.demo.transaction.exception.InvalidAccountException;
 import com.restapi.demo.transaction.model.Account;
+import com.restapi.demo.transaction.model.Payment;
 import com.restapi.demo.transaction.repository.AccountRepository;
+import com.restapi.demo.transaction.repository.PaymentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,14 +24,18 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
 
+    private final PaymentRepository paymentRepository;
+
     /**
-     * Constructs a new instance of the AccountService class with the specified AccountRepository.
+     * Constructs a new instance of the AccountService class with the specified AccountRepository and PaymentRepository.
      *
      * @param accountRepository The AccountRepository to use for accessing account data.
+     * @param paymentRepository The PaymentRepository to use for accessing payment data.
      */
     @Autowired
-    public AccountService(AccountRepository accountRepository) {
+    public AccountService(AccountRepository accountRepository, PaymentRepository paymentRepository) {
         this.accountRepository = accountRepository;
+        this.paymentRepository = paymentRepository;
     }
 
     /**
@@ -145,20 +151,51 @@ public class AccountService {
      *
      * @param accountId The ID of the account to deposit into.
      * @param amount    The amount to deposit.
+     * @param fromAccountId The ID of the account that the funds are being transferred from.
      * @throws AccountNotFoundException If no account exists with the specified ID.
      * @throws InvalidAccountException  If the specified account ID is null or empty.
      */
-    public synchronized void deposit(String accountId, BigDecimal amount) throws AccountNotFoundException, InvalidAccountException {
+    public synchronized void deposit(String accountId, BigDecimal amount, String fromAccountId) throws AccountNotFoundException, InvalidAccountException, InsufficientFundsException {
         if (accountId == null || accountId.isEmpty()) {
             throw new InvalidAccountException("Account id cannot be null or empty");
         }
         Optional<Account> optionalAccount = accountRepository.findById(accountId);
         if (optionalAccount.isPresent()) {
             Account account = optionalAccount.get();
-            account.setBalance(account.getBalance().add(amount));
+            BigDecimal newBalance = account.getBalance().add(amount);
+            if (newBalance.compareTo(BigDecimal.ZERO) < 0) {
+                throw new InsufficientFundsException("Insufficient funds");
+            }
+            account.setBalance(newBalance);
             accountRepository.save(account);
+
+            // Create a new Payment object
+            Payment payment = new Payment();
+            payment.setAmount(amount);
+            payment.setToAccount(accountId);
+            payment.setDirection("incoming");
+
+            // Check if there is a from account specified
+            if (fromAccountId != null && !fromAccountId.isEmpty()) {
+                Optional<Account> optionalFromAccount = accountRepository.findById(fromAccountId);
+                if (optionalFromAccount.isPresent()) {
+                    Account fromAccount = optionalFromAccount.get();
+                    BigDecimal newFromAccountBalance = fromAccount.getBalance().subtract(amount);
+                    if (newFromAccountBalance.compareTo(BigDecimal.ZERO) < 0) {
+                        throw new InsufficientFundsException("Insufficient funds");
+                    }
+                    fromAccount.setBalance(newFromAccountBalance);
+                    accountRepository.save(fromAccount);
+                    payment.setFromAccount(fromAccountId);
+                    payment.setDirection("outgoing");
+                }
+            }
+            // Save the Payment object to the database
+            paymentRepository.save(payment);
         } else {
             throw new AccountNotFoundException("Account not found");
         }
     }
+
+
 }

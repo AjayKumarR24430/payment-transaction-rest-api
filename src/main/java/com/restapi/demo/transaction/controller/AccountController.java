@@ -17,6 +17,7 @@ public class AccountController {
 
     private final AccountService accountService;
 
+    @Autowired
     public AccountController(AccountService accountService) {
         this.accountService = accountService;
     }
@@ -38,14 +39,15 @@ public class AccountController {
      * @param accountId the ID of the account to retrieve
      * @return a ResponseEntity containing the account and an HTTP status code
      */
-    @ExceptionHandler({AccountNotFoundException.class, InvalidAccountException.class})
     @GetMapping("/{accountId}")
     public ResponseEntity<Account> getAccountById(@PathVariable String accountId) {
         try {
             Account account = accountService.getAccountById(accountId);
             return ResponseEntity.ok(account);
         } catch (AccountNotFoundException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity
+                    .notFound()
+                    .build();
         }
     }
 
@@ -68,7 +70,6 @@ public class AccountController {
      * @param account   the updated account object
      * @return a ResponseEntity containing the updated account and an HTTP status code
      */
-    @ExceptionHandler({AccountNotFoundException.class, InvalidAccountException.class})
     @PutMapping("/{accountId}")
     public ResponseEntity<Account> updateAccount(@PathVariable String accountId, @RequestBody Account account) {
         Account updatedAccount = accountService.updateAccount(accountId, account);
@@ -84,7 +85,6 @@ public class AccountController {
      * @param accountId the ID of the account to delete
      * @return a ResponseEntity with an HTTP status code indicating success or failure
      */
-    @ExceptionHandler({AccountNotFoundException.class, InvalidAccountException.class})
     @DeleteMapping("/{accountId}")
     public ResponseEntity<Void> deleteAccount(@PathVariable String accountId) {
         accountService.deleteAccount(accountId);
@@ -92,18 +92,28 @@ public class AccountController {
     }
 
     /**
-     * Deposits funds into the account with the specified ID.
+     * Transfers funds from one account to another.
      *
-     * @param accountId the ID of the account to deposit funds into
-     * @param amount    the amount of funds to deposit
+     * @param fromAccountId the ID of the account to transfer funds from
+     * @param toAccountId   the ID of the account to transfer funds to
+     * @param amount        the amount of funds to transfer
      * @return a ResponseEntity with an HTTP status code indicating success or failure
      */
-    @ExceptionHandler({AccountNotFoundException.class, InvalidAccountException.class, InsufficientFundsException.class})
-    @PostMapping("/{accountId}/deposit")
-    public ResponseEntity<Void> deposit(@PathVariable String accountId, @RequestParam("amount") BigDecimal amount) {
-        accountService.deposit(accountId, amount);
-        return ResponseEntity.noContent().build();
+    @PostMapping("/{fromAccountId}/deposit")
+    public ResponseEntity<String> deposit(@PathVariable String fromAccountId, @RequestParam("toAccountId") String toAccountId, @RequestParam("amount") BigDecimal amount) {
+        try {
+            accountService.deposit(toAccountId, amount, fromAccountId);
+            String message = String.format("Successfully transferred %s from account %s to account %s.", amount, fromAccountId, toAccountId);
+            return ResponseEntity.ok(message);
+        } catch (InsufficientFundsException e) {
+            return ResponseEntity.badRequest().body("Insufficient funds.");
+        } catch (AccountNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
+
 
     /**
      * Withdraws funds from the account
@@ -115,7 +125,7 @@ public class AccountController {
      * @throws InsufficientFundsException if the account balance is not sufficient to cover the withdrawal amount
      * @throws InvalidAccountException if the specified account ID is invalid
      */
-    @ExceptionHandler({AccountNotFoundException.class, InvalidAccountException.class, InsufficientFundsException.class})
+//    @ExceptionHandler({AccountNotFoundException.class, InvalidAccountException.class, InsufficientFundsException.class})
     @PostMapping("/{accountId}/withdraw")
     public ResponseEntity<String> withdraw(@PathVariable String accountId, @RequestParam("amount") BigDecimal amount)
             throws AccountNotFoundException, InsufficientFundsException, InvalidAccountException {
@@ -127,5 +137,20 @@ public class AccountController {
         } catch (InvalidAccountException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         }
+    }
+
+    @ExceptionHandler(AccountNotFoundException.class)
+    public ResponseEntity<String> handleAccountNotFoundException(AccountNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InvalidAccountException.class)
+    public ResponseEntity<String> handleInvalidAccountException(InvalidAccountException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(InsufficientFundsException.class)
+    public ResponseEntity<String> handleInsufficientFundsException(InsufficientFundsException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
     }
 }
